@@ -175,6 +175,23 @@ export default function CalculationPage({ grades, weights, result, onViewOutput 
       >
         Lihat Output &amp; Export Data
       </button>
+
+      <button
+          onClick={() => router.push('/input')}
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            borderRadius: 12,
+            border: "none",
+            background: "#DC2626",
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Input Data Baru
+        </button>
     </div>
   );
 }
@@ -267,3 +284,4 @@ function FormulaRow({ label, formula, contrib }: { label: string; formula: strin
     </div>
   );
 }
+

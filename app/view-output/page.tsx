@@ -1,48 +1,96 @@
-// app/view-output/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import { calculateFinalScore } from "../utils/gradeCalculator";
 
-// ── Data dummy (ganti nanti dengan data asli dari state/context) ──
-const grades = {
-  nilaiTugas: [98],
-  nilaiUts: 89,
-  nilaiUas: 90,
+type Grades = {
+  nilaiTugas: number[];
+  nilaiUts: number;
+  nilaiUas: number;
 };
 
-const weights = {
-  tugas: 0.3,
-  uts: 0.3,
-  uas: 0.4,
+type Weights = {
+  tugas: number;
+  uts: number;
+  uas: number;
 };
 
 const GRADE_COLORS: Record<string, { bg: string; text: string }> = {
-  A:    { bg: "#7C3AED", text: "#ffffff" },
+  A: { bg: "#7C3AED", text: "#ffffff" },
   "B+": { bg: "#9FE1CB", text: "#085041" },
-  B:    { bg: "#9FE1CB", text: "#085041" },
+  B: { bg: "#9FE1CB", text: "#085041" },
   "C+": { bg: "#FAC775", text: "#633806" },
-  C:    { bg: "#FAC775", text: "#633806" },
-  D:    { bg: "#F5C4B3", text: "#4A1B0C" },
-  E:    { bg: "#F7C1C1", text: "#501313" },
+  C: { bg: "#FAC775", text: "#633806" },
+  D: { bg: "#F5C4B3", text: "#4A1B0C" },
+  E: { bg: "#F7C1C1", text: "#501313" },
 };
 
 export default function OutputPage() {
+  const [grades, setGrades] = useState<Grades | null>(null);
+  const [weights, setWeights] = useState<Weights | null>(null);
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("gradingData");
+
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setGrades(parsed.grades);
+      setWeights(parsed.weights);
+    }
+  }, []);
+
+  if (!grades || !weights) {
+    return (
+      <div style={{ padding: "1.5rem", background: "#F3F4F6", minHeight: "100vh" }}>
+        <div
+          style={{
+            background: "#fff",
+            border: "0.5px solid #E5E7EB",
+            borderRadius: 12,
+            padding: "1.5rem",
+          }}
+        >
+          <h2 style={{ fontSize: 18, fontWeight: 500, color: "#111", marginBottom: 8 }}>
+            Data belum tersedia
+          </h2>
+          <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+            Silakan isi data nilai terlebih dahulu.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/input")}
+            style={{
+              padding: "0.75rem 1rem",
+              borderRadius: 10,
+              border: "none",
+              background: "#1D9E75",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Ke Halaman Input
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const result = calculateFinalScore(grades, weights);
   const { rataRataTugas, nilaiAkhir, nilaiHuruf } = result;
 
   const tugasContrib = (weights.tugas * rataRataTugas).toFixed(2);
-  const utsContrib   = (weights.uts   * grades.nilaiUts).toFixed(2);
-  const uasContrib   = (weights.uas   * grades.nilaiUas).toFixed(2);
+  const utsContrib = (weights.uts * grades.nilaiUts).toFixed(2);
+  const uasContrib = (weights.uas * grades.nilaiUas).toFixed(2);
 
   const gradeColor = GRADE_COLORS[nilaiHuruf] ?? { bg: "#D3D1C7", text: "#444441" };
 
-  // ── Export CSV ──
   const handleExportCSV = () => {
     const rows = [
       ["Komponen", "Nilai", "Bobot (%)", "Kontribusi"],
-      ["Rata-rata Tugas", rataRataTugas.toFixed(2), "30%", tugasContrib],
-      ["UTS", grades.nilaiUts.toFixed(2), "30%", utsContrib],
-      ["UAS", grades.nilaiUas.toFixed(2), "40%", uasContrib],
+      ["Rata-rata Tugas", rataRataTugas.toFixed(2), `${weights.tugas * 100}%`, tugasContrib],
+      ["UTS", grades.nilaiUts.toFixed(2), `${weights.uts * 100}%`, utsContrib],
+      ["UAS", grades.nilaiUas.toFixed(2), `${weights.uas * 100}%`, uasContrib],
       ["Nilai Akhir", "", "", nilaiAkhir.toFixed(2)],
       ["Nilai Huruf", "", "", nilaiHuruf],
     ];
@@ -57,7 +105,6 @@ export default function OutputPage() {
     URL.revokeObjectURL(url);
   };
 
-  // ── Export JSON ──
   const handleExportJSON = () => {
     const data = {
       input: {
@@ -95,8 +142,6 @@ export default function OutputPage() {
 
   return (
     <div style={{ padding: "1.5rem", background: "#F3F4F6", minHeight: "100vh" }}>
-
-      {/* Heading */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h2 style={{ fontSize: 18, fontWeight: 500, color: "#111" }}>
           Data Akhir
@@ -106,7 +151,6 @@ export default function OutputPage() {
         </p>
       </div>
 
-      {/* Tabel Ringkasan */}
       <div
         style={{
           background: "#fff",
@@ -137,29 +181,25 @@ export default function OutputPage() {
             </tr>
           </thead>
           <tbody>
-            {/* Rata-rata Tugas */}
             <TableRow
               label="Rata-rata Tugas"
               nilai={rataRataTugas.toFixed(2)}
-              bobot="30%"
+              bobot={`${weights.tugas * 100}%`}
               kontribusi={tugasContrib}
             />
-            {/* UTS */}
             <TableRow
               label="UTS"
               nilai={grades.nilaiUts.toFixed(2)}
-              bobot="30%"
+              bobot={`${weights.uts * 100}%`}
               kontribusi={utsContrib}
             />
-            {/* UAS */}
             <TableRow
               label="UAS"
               nilai={grades.nilaiUas.toFixed(2)}
-              bobot="40%"
+              bobot={`${weights.uas * 100}%`}
               kontribusi={uasContrib}
             />
 
-            {/* Nilai Akhir */}
             <tr style={{ background: "#F9FAFB" }}>
               <td
                 style={{
@@ -187,7 +227,6 @@ export default function OutputPage() {
               </td>
             </tr>
 
-            {/* Nilai Huruf */}
             <tr>
               <td
                 style={{
@@ -232,7 +271,6 @@ export default function OutputPage() {
         </table>
       </div>
 
-      {/* Detail Nilai Tugas */}
       <div
         style={{
           background: "#fff",
@@ -267,7 +305,6 @@ export default function OutputPage() {
         </div>
       </div>
 
-      {/* Export Buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
         <button
           onClick={handleExportCSV}
@@ -311,7 +348,6 @@ export default function OutputPage() {
         </button>
       </div>
 
-      {/* Back Button */}
       <button
         onClick={() => window.history.back()}
         style={{
@@ -332,12 +368,16 @@ export default function OutputPage() {
   );
 }
 
-/* ─── Sub-components ─── */
-
 function TableRow({
-  label, nilai, bobot, kontribusi,
+  label,
+  nilai,
+  bobot,
+  kontribusi,
 }: {
-  label: string; nilai: string; bobot: string; kontribusi: string;
+  label: string;
+  nilai: string;
+  bobot: string;
+  kontribusi: string;
 }) {
   return (
     <tr>

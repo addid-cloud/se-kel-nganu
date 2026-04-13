@@ -2,6 +2,7 @@
 "use client";
 
 import { calculateFinalScore } from "../utils/gradeCalculator";
+import { useRouter } from "next/navigation";
 
 // ── Data dummy (ganti nanti dengan data asli dari state/context) ──
 const grades = {
@@ -27,12 +28,14 @@ const GRADE_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export default function OutputPage() {
+  const router = useRouter();
   const result = calculateFinalScore(grades, weights);
   const { rataRataTugas, nilaiAkhir, nilaiHuruf } = result;
 
   const tugasContrib = (weights.tugas * rataRataTugas).toFixed(2);
   const utsContrib   = (weights.uts   * grades.nilaiUts).toFixed(2);
   const uasContrib   = (weights.uas   * grades.nilaiUas).toFixed(2);
+  
 
   const gradeColor = GRADE_COLORS[nilaiHuruf] ?? { bg: "#D3D1C7", text: "#444441" };
 
@@ -104,6 +107,24 @@ export default function OutputPage() {
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}>
           Ringkasan lengkap perhitungan nilai dalam format tabel
         </p>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <button
+          onClick={() => router.push("/input")}
+          style={{
+            padding: "0.65rem 1rem",
+            borderRadius: 10,
+            border: "0.5px solid #E5E7EB",
+            background: "#fff",
+            color: "#374151",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Input Nilai
+        </button>
       </div>
 
       {/* Tabel Ringkasan */}
