@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Mahasiswa {
+  id         Int    @id @default(autoincrement())
+  nim        String
+  kodeMatkul String
+
+  tugas    Tugas[]
+  nilaiUTS Float?
+  nilaiUAS Float?
+
+  nilaiAkhir NilaiAkhir[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tugas {
+  id          Int   @id @default(autoincrement())
+  nilai       Float
+  mahasiswaId Int
+
+  mahasiswa Mahasiswa @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+}
+
+model BobotPenilaian {
+  id         Int   @id @default(autoincrement())
+  bobotTugas Float // contoh: 0.3
+  bobotUTS   Float // contoh: 0.3
+  bobotUAS   Float // contoh: 0.4
+}
+
+model NilaiAkhir {
+  id          Int @id @default(autoincrement())
+  mahasiswaId Int
+
+  rataTugas Float
+  nilaiUTS  Float
+  nilaiUAS  Float
+
+  persenTugas Float
+  persenUTS   Float
+  persenUAS   Float
+
+  nilaiAkhir Float
+  nilaiHuruf String
+
+  mahasiswa Mahasiswa @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+}
